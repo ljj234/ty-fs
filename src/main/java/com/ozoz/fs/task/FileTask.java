@@ -18,7 +18,6 @@ public class FileTask {
     @Value("${file.path}")
     private String path;
 
-
     @Scheduled(cron = "59 59 23 * * ?")
     public void deleteFile() {
         log.info("定时删除文件下的目录");

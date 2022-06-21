@@ -47,7 +47,8 @@ public class FileInfoController {
             dest.getParentFile().mkdirs();
         }
         try {
-            file.transferTo(dest); // 保存文件
+            // 保存文件
+            file.transferTo(dest);
         } catch (Exception e) {
             log.error(e.toString());
         }
