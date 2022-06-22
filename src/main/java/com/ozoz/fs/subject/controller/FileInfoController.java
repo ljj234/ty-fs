@@ -11,7 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
 import java.time.LocalDateTime;
 
 /**
@@ -29,6 +31,42 @@ public class FileInfoController {
 
     @Value("${file.path}")
     private String path;
+
+
+    @PostMapping("/file/download/{id}")
+    public ResponseEntity<HttpServletResponse> download(@PathVariable String id, HttpServletRequest httpServletRequest,
+                                                        HttpServletResponse response) {
+        try {
+            // path是指欲下载的文件的路径。
+            File file = new File(path + "/" + id);
+
+            // 以流的形式下载文件。
+            InputStream fis = null;
+                fis = new BufferedInputStream(new FileInputStream(file));
+            byte[] buffer = new byte[fis.available()];
+            fis.read(buffer);
+            fis.close();
+            // 清空response
+            response.reset();
+            // 设置response的Header
+            response.addHeader("Access-Control-Allow-Origin", httpServletRequest.getHeader("Origin"));
+            response.addHeader("Access-Control-Expose-Headers","token,uid,Content-Disposition");
+            response.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+            response.addHeader("Access-Control-Allow-Headers", "Content-Type");
+            response.addHeader("Access-Control-Allow-Credentials","true");
+            response.addHeader("Content-Disposition", "attachment;");
+            response.addHeader("Content-Length", "" + file.length());
+            OutputStream toClient = new BufferedOutputStream(response.getOutputStream());
+            response.setContentType("application/octet-stream");
+            toClient.write(buffer);
+            toClient.flush();
+            toClient.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return ResponseEntity.ok(response);
+    }
+
 
     @PostMapping("/file")
     @ApiOperation(value = "上传文件")
